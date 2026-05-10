@@ -22,7 +22,7 @@ Each subdirectory is a self-contained project with its own build system, tests, 
 
 ### C++ — `CPP/`
 
-> **Status:** 🚧 In active development
+> **Status:** In active development
 
 **Target:** C++17 · CMake · Linux
 
@@ -40,7 +40,7 @@ See [`CPP/README.md`](CPP/README.md) for build instructions, API reference, and 
 
 ### Java — `Java/`
 
-> **Status:** 📋 Planned
+> **Status:** Planned
 
 See [`Java/README.md`](Java/README.md) for status updates.
 
