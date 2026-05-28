@@ -12,58 +12,79 @@
 static const char DELIM = '\x1F';
 
 template <typename T> struct ContainerName {
+  static constexpr bool supported = false;
   static std::string name() { return "unknown"; }
 };
 
 template <> struct ContainerName<std::string> {
+  static constexpr bool supported = true;
   static std::string name() { return "string"; }
 };
 template <typename T> struct ContainerName<std::vector<T>> {
+  static constexpr bool supported = true;
   static std::string name() { return "vector"; }
 };
 template <typename T> struct ContainerName<std::list<T>> {
+  static constexpr bool supported = true;
   static std::string name() { return "list"; }
 };
 template <typename T> struct ContainerName<std::set<T>> {
+  static constexpr bool supported = true;
   static std::string name() { return "set"; }
 };
 template <typename T> struct ContainerName<std::multiset<T>> {
+  static constexpr bool supported = true;
   static std::string name() { return "multiset"; }
 };
 template <typename T> struct ContainerName<std::unordered_set<T>> {
+  static constexpr bool supported = true;
   static std::string name() { return "unordered_set"; }
 };
 template <typename T> struct ContainerName<std::unordered_multiset<T>> {
+  static constexpr bool supported = true;
   static std::string name() { return "unordered_multiset"; }
 };
 template <typename T> struct ContainerName<std::queue<T>> {
+  static constexpr bool supported = true;
   static std::string name() { return "queue"; }
 };
 template <typename T> struct ContainerName<std::stack<T>> {
+  static constexpr bool supported = true;
   static std::string name() { return "stack"; }
 };
 
 
 template <typename T> struct TypeName {
+  static constexpr bool supported = false;
   static std::string name() { return "unknown"; }
 };
 template <> struct TypeName<int> {
+  static constexpr bool supported = true;
   static std::string name() { return "int"; }
 };
 template <> struct TypeName<long long> {
+  static constexpr bool supported = true;
   static std::string name() { return "long long"; }
 };
 template <> struct TypeName<float> {
+  static constexpr bool supported = true;
   static std::string name() { return "float"; }
 };
 template <> struct TypeName<double> {
+  static constexpr bool supported = true;
   static std::string name() { return "double"; }
 };
 template <> struct TypeName<bool> {
+  static constexpr bool supported = true;
   static std::string name() { return "bool"; }
 };
 template <> struct TypeName<char> {
+  static constexpr bool supported = true;
   static std::string name() { return "char"; }
+};
+template <> struct TypeName<std::string> {
+  static constexpr bool supported = true;
+  static std::string name() { return "string"; }
 };
 
 
@@ -101,6 +122,8 @@ static std::string lenPrefix(const std::string &s) {
 template <typename T> static std::string elementToString(const T &elem) {
   if constexpr (std::is_same_v<T, char>)
     return std::string(1, elem);
+  else if constexpr (std::is_same_v<T, std::string>) 
+    return elem;
   else
     return std::to_string(elem);
 }
@@ -119,7 +142,9 @@ template <typename T> static T stringToValue(const std::string &str) {
     return std::stof(str);
   else if constexpr (std::is_same_v<T, double>)
     return std::stod(str);
-  else
+  else if constexpr (std::is_same_v<T, std::string>) 
+    return str;
+  else 
     return T{};
 }
 
@@ -157,6 +182,7 @@ class Serializer {
 public:
   // Primitive wire format: "N:type\x1FM:value"  e.g. int 42 -> "3:int\x1F2:42"
   template <typename T> static std::string serializePrimitive(const T &value) {
+    static_assert(TypeName<T>::supported, "Unsupported primitive type. Supported: int, long long, float, double, bool, char");
     return lenPrefix(TypeName<T>::name()) + DELIM +
            lenPrefix(elementToString(value));
   }
@@ -170,6 +196,7 @@ public:
    * data
    */
   template <typename T> static std::string serializeContainer(const T &value) {
+    static_assert(ContainerName<T>::supported, "Unsupported container type. Supported: vector, list, set, multiset, unordered_set, unordered_multiset, queue, stack, string");
     std::string containerName = ContainerName<T>::name();
 
     if constexpr (std::is_same_v<T, std::string>) {
@@ -248,6 +275,17 @@ public:
       } catch (...) {
         return std::nullopt;
       }
+    }
+    
+    // stack serializes top-to-bottom, so deserialized elements arrive in reverse order
+    // reverse by pushing into a temp stack before returning
+    if constexpr (has_top<T>::value) {
+      T temp;
+      while(!result.empty()){
+        temp.push(result.top());
+        result.pop();
+      }
+      swap(result, temp);
     }
 
     return result;
