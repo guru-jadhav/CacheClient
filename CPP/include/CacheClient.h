@@ -4,6 +4,7 @@
 #include <string>
 #include <type_traits>
 #include "TypeSerializer.h"
+#include "TCPClient.h"
 
 enum class ClientError {
     NETWORK_ERR,
@@ -15,13 +16,24 @@ enum class ClientError {
 class CacheClient {
     std::string domain;
     std::uint16_t port;
-
+    TCPClient client;
     // TODO: add TCPClient instance here
     // TODO: add RESPParser instance here
 
 public:
 
-    CacheClient(const std::string& _domain, const std::uint16_t _port) : domain(_domain), port(_port) {}
+    CacheClient(const std::string& _domain, const std::uint16_t _port) : domain(_domain), port(_port) {
+        client = TCPClient(_domain, _port);
+    }
+    
+    /**
+    * @brief method to check if the TCP connection between the CacheClient & CacheCore is working.
+    * @note checks DNS resolution + TCP connection
+    * @return bool - true/false
+    */
+    bool connect(){
+        return client.connect();
+    };
 
     std::string PING();
     bool DEL(const unsigned int DB, const std::string& _key);
