@@ -1,9 +1,13 @@
+#pragma once
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <netdb.h>
+#include "../include/Exceptions.h"
+
 class TCPClient {
     std::string domain;
     std::uint16_t port;
@@ -36,6 +40,27 @@ class TCPClient {
         return false;
     };
 
+    std::optional<std::string> RECV(){
+        
+        char buffer[4096];
+        std::string response;
+        while(true){
+            int bytesRead = recv(clientFd, buffer, sizeof(buffer) - 1, 0);
+        
+            if(bytesRead == -1){
+                return std::nullopt;
+            }
+            
+            buffer[bytesRead] = '\0';
+            response += std::string(buffer, bytesRead);
+        
+            // but what if server gets disconnected ? and we need to parse resp cmd out of this 
+            // only then we know that we can return from this response
+            
+        }
+        return "";
+    };
+
 public:
 
     TCPClient();
@@ -44,4 +69,19 @@ public:
     bool connect(){
         return tryConnect();
     }
+
+
+    std::optional<std::string> SEND(const std::string& raw){
+        u_int32_t totalSent = 0;
+        while(totalSent != raw.size()){
+            int bytesSent = send(clientFd, raw.c_str() + totalSent, raw.size() - totalSent, 0);
+            if(bytesSent == -1){
+                // return std::nullopt;
+                throw NetworkException("network erroe while sending to CacheCore");
+            }
+            totalSent += bytesSent;
+        }
+        
+        return RECV();
+    };
 };
