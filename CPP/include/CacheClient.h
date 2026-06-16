@@ -5,13 +5,7 @@
 #include <type_traits>
 #include "TypeSerializer.h"
 #include "TCPClient.h"
-
-enum class ClientError {
-    NETWORK_ERR,
-    UNSUPPORTED_TYPE,
-    SERIALIZE_ERR,
-    DESERIALIZE_ERR
-};
+#include "../include/RESPParser.h"
 
 class CacheClient {
     std::string domain;
@@ -56,17 +50,35 @@ public:
     std::optional<bool> SET(const unsigned int DB, const std::string& _key, const T& _value, const bool _willExpire = true) {
 
         if constexpr (std::is_arithmetic_v<T>) {
-            if (TypeName<T>::name() == "unknown") return std::nullopt;
+            if (TypeName<T>::name() == "unknown"){
+                return std::nullopt;
+            }
+            
             std::string formatted = Serializer::serializePrimitive(_value);
             // TODO: RESPParser::encode(DB, "SET", _key, formatted, _willExpire)
             // TODO: TCPClient::send(encoded)
 
         } else {
-            if (ContainerName<T>::name() == "unknown") return std::nullopt;
-            if (TypeName<typename T::value_type>::name() == "unknown") return std::nullopt;
+            if (ContainerName<T>::name() == "unknown"){
+                return std::nullopt;
+            }
+            if (TypeName<typename T::value_type>::name() == "unknown"){
+                return std::nullopt;
+            }
+            
             std::string formatted = Serializer::serializeContainer(_value);
+
+            RESPRequest req = RESPRequest();
+            req.cmd = "SET";
+            req.dbIndex = DB;
+            req.key = _key;
+            req.value = formatted;
+            req.expires = _willExpire;
+
             // TODO: RESPParser::encode(DB, "SET", _key, formatted, _willExpire)
+            std::string respFormatted = RESPParser::encode(req);
             // TODO: TCPClient::send(encoded)
+            auto response = client.SEND(respFormatted);
         }
 
         return std::nullopt;
