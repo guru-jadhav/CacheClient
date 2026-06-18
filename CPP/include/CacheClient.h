@@ -127,6 +127,49 @@ public:
     }
 
     /**
+     * @brief Stores a raw, unserialized string value in CacheCore.
+     * @return bool - true on success
+     */
+    bool SETRAW(const unsigned int DB, const std::string& _key, const std::string& _value, const bool _willExpire = true) {
+        RESPRequest req;
+        req.cmd      = "SET";
+        req.dbIndex  = DB;
+        req.key      = _key;
+        req.value    = _value;
+        req.expires  = _willExpire;
+
+        std::string raw = client.SEND(RESPParser::encode(req));
+        RESPResponse resp = RESPParser::decode(raw);
+        if (resp.isError) {
+            throw DeserializeException(resp.value);
+        }
+        return resp.value == "1";
+    }
+
+    /**
+     * @brief Retrieves a raw, unserialized string value from CacheCore.
+     * @return std::optional<std::string> - raw string value, or std::nullopt if key does not exist
+     */
+    std::optional<std::string> GETRAW(const unsigned int DB, const std::string& _key) {
+        RESPRequest req;
+        req.cmd     = "GET";
+        req.dbIndex = DB;
+        req.key     = _key;
+
+        std::string raw = client.SEND(RESPParser::encode(req));
+        RESPResponse resp = RESPParser::decode(raw);
+
+        if (resp.isError) {
+            throw DeserializeException(resp.value);
+        }
+        if (resp.isNull)  {
+            return std::nullopt;
+        }
+
+        return resp.value;
+    }
+
+    /**
     * @brief Stores a value in CacheCore. Accepts any supported STL container,
     *        std::string, or arithmetic primitive. Serializes client-side before sending.
     *
