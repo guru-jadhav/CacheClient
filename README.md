@@ -32,7 +32,7 @@ Each subdirectory is a self-contained project with its own build system, tests, 
 - Persistent TCP connection with auto-reconnect
 - Connection pooling
 - Domain-name based server resolution
-- Full coverage of CacheCore commands: `SET`, `GET`, `DEL`, `EXISTS`, `INCR`, `EXPIRE`, `CLEAR`, `PING`
+- Full coverage of CacheCore commands: `SET`, `GET`, `SETRAW`, `GETRAW`, `DEL`, `EXISTS`, `INCR`, `EXPIRE`, `CLEAR`, `PING`
 
 See [`CPP/README.md`](CPP/README.md) for build instructions, API reference, and usage examples.
 
