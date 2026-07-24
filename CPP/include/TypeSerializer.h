@@ -114,9 +114,7 @@ struct has_push_back<T, std::void_t<decltype(std::declval<T>().push_back(std::de
 
 
 // Encodes a string as "N:value" — length-prefix prevents delimiter collision
-static std::string lenPrefix(const std::string &s) {
-  return std::to_string(s.size()) + ':' + s;
-}
+std::string lenPrefix(const std::string &s);
 
 // Converts a single element to string — char needs special handling
 template <typename T> static std::string elementToString(const T &elem) {
@@ -153,29 +151,7 @@ template <typename T> static T stringToValue(const std::string &str) {
  *        Format: "N:value\x1FM:value\x1F..."
  *        "6:vector\x1F3:int\x1F1:1" -> ["vector", "int", "1"]
  */
-static std::vector<std::string> parseBlocks(const std::string &raw) {
-  std::vector<std::string> blocks;
-  size_t i = 0;
-
-  while (i < raw.size()) {
-    size_t colonPos = raw.find(':', i);
-    if (colonPos == std::string::npos)
-      break;
-
-    size_t blockLen = std::stoull(raw.substr(i, colonPos - i));
-    i = colonPos + 1;
-
-    if (i + blockLen > raw.size())
-      break;
-    blocks.push_back(raw.substr(i, blockLen));
-    i += blockLen;
-
-    if (i < raw.size() && raw[i] == DELIM)
-      i++;
-  }
-
-  return blocks;
-}
+std::vector<std::string> parseBlocks(const std::string &raw);
 
 
 class Serializer {
