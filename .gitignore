@@ -1,0 +1,22 @@
+# C++ Build Artifacts
+CPP/build/
+CPP/CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles/
+CMakeSettings.json
+compile_commands.json
+
+# Java Build Artifacts
+Java/target/
+*.class
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*~
+.DS_Store
