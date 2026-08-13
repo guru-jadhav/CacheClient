@@ -8,10 +8,12 @@ import java.util.Optional;
 public class CacheClient {
     private final String domain;
     private final int port;
+    private final TCPClient client;
 
     public CacheClient(String domain, int port) {
         this.domain = domain;
         this.port = port;
+        this.client = new TCPClient(domain, port);
     }
 
     /**
@@ -19,7 +21,7 @@ public class CacheClient {
      * @return boolean - true on successful connection
      */
     public boolean connect() {
-        return false;
+        return client.connect();
     }
 
     /**
