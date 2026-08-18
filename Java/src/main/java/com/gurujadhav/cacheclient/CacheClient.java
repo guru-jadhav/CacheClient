@@ -1,6 +1,8 @@
 package com.gurujadhav.cacheclient;
 
+import java.util.Collection;
 import java.util.Optional;
+import java.util.Stack;
 
 /**
  * Main client class providing the public CacheCore API endpoints.
@@ -29,7 +31,15 @@ public class CacheClient {
      * @return String - PONG on success
      */
     public String PING() {
-        return null;
+        RESPRequest req = new RESPRequest();
+        req.cmd = "PING";
+        req.dbIndex = 0;
+
+        RESPResponse resp = RESPParser.decode(client.send(RESPParser.encode(req)));
+        if (resp.isError) {
+            throw new DeserializeException(resp.value);
+        }
+        return resp.value;
     }
 
     /**
@@ -37,7 +47,16 @@ public class CacheClient {
      * @return boolean - true if deleted
      */
     public boolean DEL(int db, String key) {
-        return false;
+        RESPRequest req = new RESPRequest();
+        req.cmd = "DEL";
+        req.dbIndex = db;
+        req.key = Optional.of(key);
+
+        RESPResponse resp = RESPParser.decode(client.send(RESPParser.encode(req)));
+        if (resp.isError) {
+            throw new DeserializeException(resp.value);
+        }
+        return resp.value.equals("OK") || resp.value.equals("1");
     }
 
     /**
@@ -45,7 +64,16 @@ public class CacheClient {
      * @return boolean - true if exists
      */
     public boolean EXISTS(int db, String key) {
-        return false;
+        RESPRequest req = new RESPRequest();
+        req.cmd = "EXISTS";
+        req.dbIndex = db;
+        req.key = Optional.of(key);
+
+        RESPResponse resp = RESPParser.decode(client.send(RESPParser.encode(req)));
+        if (resp.isError) {
+            throw new DeserializeException(resp.value);
+        }
+        return resp.value.equals("1");
     }
 
     /**
@@ -53,7 +81,15 @@ public class CacheClient {
      * @return boolean - true on success
      */
     public boolean CLEAR(int db) {
-        return false;
+        RESPRequest req = new RESPRequest();
+        req.cmd = "CLEAR";
+        req.dbIndex = db;
+
+        RESPResponse resp = RESPParser.decode(client.send(RESPParser.encode(req)));
+        if (resp.isError) {
+            throw new DeserializeException(resp.value);
+        }
+        return true;
     }
 
     /**
@@ -61,7 +97,17 @@ public class CacheClient {
      * @return boolean - true on success
      */
     public boolean EXPIRE(int db, String key, int duration) {
-        return false;
+        RESPRequest req = new RESPRequest();
+        req.cmd = "EXPIRE";
+        req.dbIndex = db;
+        req.key = Optional.of(key);
+        req.value = Optional.of(String.valueOf(duration));
+
+        RESPResponse resp = RESPParser.decode(client.send(RESPParser.encode(req)));
+        if (resp.isError) {
+            throw new DeserializeException(resp.value);
+        }
+        return true;
     }
 
     /**
@@ -69,7 +115,20 @@ public class CacheClient {
      * @return long - the value after increment
      */
     public long INCR(int db, String key) {
-        return 0;
+        RESPRequest req = new RESPRequest();
+        req.cmd = "INCR";
+        req.dbIndex = db;
+        req.key = Optional.of(key);
+
+        RESPResponse resp = RESPParser.decode(client.send(RESPParser.encode(req)));
+        if (resp.isError) {
+            throw new DeserializeException(resp.value);
+        }
+        try {
+            return Long.parseLong(resp.value);
+        } catch (NumberFormatException e) {
+            throw new DeserializeException("failed to parse incremented value: " + resp.value, e);
+        }
     }
 
     /**
@@ -77,7 +136,18 @@ public class CacheClient {
      * @return boolean - true on success
      */
     public boolean SETRAW(int db, String key, String value, boolean willExpire) {
-        return false;
+        RESPRequest req = new RESPRequest();
+        req.cmd = "SET";
+        req.dbIndex = db;
+        req.key = Optional.of(key);
+        req.value = Optional.of(value);
+        req.expires = Optional.of(willExpire);
+
+        RESPResponse resp = RESPParser.decode(client.send(RESPParser.encode(req)));
+        if (resp.isError) {
+            throw new DeserializeException(resp.value);
+        }
+        return resp.value.equals("1");
     }
 
     /**
@@ -85,7 +155,19 @@ public class CacheClient {
      * @return Optional - raw value, or empty if key does not exist
      */
     public Optional<String> GETRAW(int db, String key) {
-        return Optional.empty();
+        RESPRequest req = new RESPRequest();
+        req.cmd = "GET";
+        req.dbIndex = db;
+        req.key = Optional.of(key);
+
+        RESPResponse resp = RESPParser.decode(client.send(RESPParser.encode(req)));
+        if (resp.isError) {
+            throw new DeserializeException(resp.value);
+        }
+        if (resp.isNull) {
+            return Optional.empty();
+        }
+        return Optional.of(resp.value);
     }
 
     /**
@@ -93,14 +175,70 @@ public class CacheClient {
      * @return boolean - true on success
      */
     public <T> boolean SET(int db, String key, T value, boolean willExpire) {
-        return false;
+        String formatted;
+        if (value instanceof String || value instanceof Collection || value instanceof Stack) {
+            formatted = TypeSerializer.serializeContainer(value);
+        } else {
+            formatted = TypeSerializer.serializePrimitive(value);
+        }
+
+        RESPRequest req = new RESPRequest();
+        req.cmd = "SET";
+        req.dbIndex = db;
+        req.key = Optional.of(key);
+        req.value = Optional.of(formatted);
+        req.expires = Optional.of(willExpire);
+
+        RESPResponse resp = RESPParser.decode(client.send(RESPParser.encode(req)));
+        if (resp.isError) {
+            throw new DeserializeException(resp.value);
+        }
+        return resp.value.equals("1");
     }
 
     /**
-     * Retrieves a value from CacheCore and deserializes it into type T.
+     * Retrieves a value from CacheCore and deserializes it into primitive type T or String.
      * @return Optional - deserialized value, or empty if key does not exist
      */
     public <T> Optional<T> GET(int db, String key, Class<T> type) {
-        return Optional.empty();
+        RESPRequest req = new RESPRequest();
+        req.cmd = "GET";
+        req.dbIndex = db;
+        req.key = Optional.of(key);
+
+        RESPResponse resp = RESPParser.decode(client.send(RESPParser.encode(req)));
+        if (resp.isError) {
+            throw new DeserializeException(resp.value);
+        }
+        if (resp.isNull) {
+            return Optional.empty();
+        }
+
+        if (type == String.class) {
+            return Optional.of(type.cast(TypeSerializer.deserializeContainer(resp.value, String.class, null)));
+        } else {
+            return Optional.of(TypeSerializer.deserializePrimitive(resp.value, type));
+        }
+    }
+
+    /**
+     * Retrieves a collection from CacheCore and deserializes it into containerType of elementType.
+     * @return Optional - deserialized collection, or empty if key does not exist
+     */
+    public <T> Optional<T> GET(int db, String key, Class<T> containerType, Class<?> elementType) {
+        RESPRequest req = new RESPRequest();
+        req.cmd = "GET";
+        req.dbIndex = db;
+        req.key = Optional.of(key);
+
+        RESPResponse resp = RESPParser.decode(client.send(RESPParser.encode(req)));
+        if (resp.isError) {
+            throw new DeserializeException(resp.value);
+        }
+        if (resp.isNull) {
+            return Optional.empty();
+        }
+
+        return Optional.of(TypeSerializer.deserializeContainer(resp.value, containerType, elementType));
     }
 }
