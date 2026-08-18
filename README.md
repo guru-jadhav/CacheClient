@@ -10,39 +10,51 @@ CacheClient handles TCP connection management, RESP protocol encoding/decoding, 
 
 ```
 CacheClient/
-├── CPP/        # C++17 client library (synchronous v1, connection pooling)
-└── Java/       # Java client library (coming soon)
+├── CPP/        # C++17 client library (synchronous, E2E integration tested)
+└── Java/       # Java 11 client library (synchronous, JUnit 5 tested)
 ```
 
-Each subdirectory is a self-contained project with its own build system, tests, and documentation.
+Each subdirectory is a self-contained project with its own build system, test suites, and documentation.
 
 ---
 
 ## Language Clients
 
-### C++ — `CPP/`
+### C++ Client (`CPP/`)
 
-> **Status:** In active development
+> **Status:** Complete (Stable)
 
-**Target:** C++17 · CMake · Linux
+**Target:** C++17 · CMake 3.20+ · Linux
 
-**Planned features:**
-- Synchronous (blocking) API — v1
-- RESP encoder / decoder
-- Persistent TCP connection with auto-reconnect
-- Connection pooling
-- Domain-name based server resolution
-- Full coverage of CacheCore commands: `SET`, `GET`, `SETRAW`, `GETRAW`, `DEL`, `EXISTS`, `INCR`, `EXPIRE`, `CLEAR`, `PING`
+**Supported Features:**
+- Synchronous (blocking) API.
+- Native RESP protocol encoder / decoder.
+- Persistent TCP connection.
+- Dual-stack DNS-name based server resolution (IPv4 & IPv6 fallback loop).
+- Automatic serialization of C++ primitives and STL containers (`std::vector`, `std::list`, `std::set`, `std::queue`, `std::stack`).
+- Raw string bypass APIs (`SETRAW`/`GETRAW`) for server-side atomic commands.
+- Full CacheCore command coverage: `SET`, `GET`, `SETRAW`, `GETRAW`, `DEL`, `EXISTS`, `INCR`, `EXPIRE`, `CLEAR`, `PING`.
 
-See [`CPP/README.md`](CPP/README.md) for build instructions, API reference, and usage examples.
+See [`CPP/README.md`](CPP/README.md) for build instructions, API references, and usage examples.
 
 ---
 
-### Java — `Java/`
+### Java Client (`Java/`)
 
-> **Status:** Planned
+> **Status:** Complete (Stable)
 
-See [`Java/README.md`](Java/README.md) for status updates.
+**Target:** Java 11+ · Maven 3.6+ · Linux
+
+**Supported Features:**
+- Synchronous (blocking) API.
+- Persistent TCP socket connection.
+- Dual-stack DNS-name based server resolution (`InetAddress` fallback loop).
+- Automatic serialization of Java primitives and Collection interfaces (`List`, `Set`, `Queue`, `Stack`).
+- Raw string bypass APIs (`SETRAW`/`GETRAW`) to initialize counters for server-side operations.
+- Full CacheCore command coverage using C++ API naming parity (all-caps methods like `PING()`, `SET()`, `GET()`, `DEL()`, `EXISTS()`, `EXPIRE()`, `INCR()`, `CLEAR()`).
+- Robust exception hierarchy mapping (`NetworkException`, `SerializeException`, `DeserializeException`).
+
+See [`Java/README.md`](Java/README.md) for Maven setup, compiler targets, and usage examples.
 
 ---
 
@@ -50,7 +62,7 @@ See [`Java/README.md`](Java/README.md) for status updates.
 
 CacheClient targets **CacheCore's custom RESP dialect**:
 
-- Every command includes a **DB index as the first argument** — stateless multi-DB routing, no `SELECT` command needed.
+- Every command includes a **DB index as the first argument** — stateless multi-DB routing, no stateful `SELECT` command needed.
 - All values are stored as strings at the wire level — complex types are serialized client-side.
 - Wire format follows standard RESP (Redis Serialization Protocol) framing.
 
@@ -69,5 +81,5 @@ Example wire frame (SET on DB 0):
 
 ## Roadmap
 
-- [ ] C++ v1 — synchronous API
-- [ ] Java v1 — synchronous API
+- [x] C++ v1 — synchronous API (Complete)
+- [x] Java v1 — synchronous API (Complete)
