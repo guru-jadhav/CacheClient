@@ -33,7 +33,7 @@ bool TCPClient::tryConnect() {
             freeaddrinfo(res);
             return true;
         }
-        close(clientFd);
+        ::close(clientFd);
         clientFd = -1;
     }
 
@@ -74,4 +74,15 @@ std::string TCPClient::SEND(const std::string &raw) {
         totalSent += bytesSent;
     }
     return RECV();
+}
+
+TCPClient::~TCPClient() {
+    close();
+}
+
+void TCPClient::close() {
+    if (clientFd != -1) {
+        ::close(clientFd);
+        clientFd = -1;
+    }
 }

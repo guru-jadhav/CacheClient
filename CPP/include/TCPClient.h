@@ -16,6 +16,8 @@ class TCPClient {
 public:
   TCPClient() = default;
   TCPClient(const std::string &_domain, const std::uint16_t _port);
+  ~TCPClient();
+  void close();
 
   /**
    * @brief Resolves target address and connects to CacheCore server.

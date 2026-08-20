@@ -3,6 +3,14 @@
 CacheClient::CacheClient(const std::string& _domain, const std::uint16_t _port)
     : domain(_domain), port(_port), client(_domain, _port) {}
 
+CacheClient::~CacheClient() {
+    close();
+}
+
+void CacheClient::close() {
+    client.close();
+}
+
 bool CacheClient::connect() {
     return client.connect();
 }

@@ -16,6 +16,8 @@ class CacheClient {
 public:
 
     CacheClient(const std::string& _domain, const std::uint16_t _port);
+    ~CacheClient();
+    void close();
 
     /**
      * @brief Checks if the client is connected to CacheCore.

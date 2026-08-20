@@ -7,7 +7,7 @@ import java.util.Stack;
 /**
  * Main client class providing the public CacheCore API endpoints.
  */
-public class CacheClient {
+public class CacheClient implements AutoCloseable {
     private final String domain;
     private final int port;
     private final TCPClient client;
@@ -240,5 +240,13 @@ public class CacheClient {
         }
 
         return Optional.of(TypeSerializer.deserializeContainer(resp.value, containerType, elementType));
+    }
+
+    /**
+     * Closes the underlying socket and network resources.
+     */
+    @Override
+    public void close() {
+        client.close();
     }
 }
