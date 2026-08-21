@@ -20,10 +20,64 @@ CPP/
 
 ## Build
 
+To compile the library locally and run the tests:
 ```bash
 mkdir build && cd build
 cmake ..
 make
+```
+
+## Integration
+
+### CMake FetchContent (Recommended)
+You can include this library dynamically in your CMake project at build time. Add the following to your `CMakeLists.txt`:
+
+```cmake
+cmake_minimum_required(VERSION 3.20)
+project(MyApp)
+
+# 1. Import FetchContent
+include(FetchContent)
+
+# 2. Declare the dependency
+FetchContent_Declare(
+    CacheClient
+    GIT_REPOSITORY https://github.com/guru-jadhav/CacheClient.git
+    GIT_TAG        v1.0.0
+    SOURCE_SUBDIR  CPP # Tells CMake the C++ project is in the CPP/ subdirectory
+)
+
+# 3. Make the library targets available
+FetchContent_MakeAvailable(CacheClient)
+
+# 4. Define your executable and link against it
+add_executable(my_app main.cpp)
+target_link_libraries(my_app PRIVATE CacheClient)
+```
+
+### Method 2: System-wide Installation (find_package)
+Alternatively, you can clone, compile, and install the library globally to your system:
+
+```bash
+git clone https://github.com/guru-jadhav/CacheClient.git
+cd CacheClient/CPP
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=/usr/local ..
+make
+sudo make install
+```
+
+Once installed, locate and link it in your project's `CMakeLists.txt`:
+```cmake
+cmake_minimum_required(VERSION 3.20)
+project(MyApp)
+
+# 1. Locate the installed library configuration
+find_package(CacheClient REQUIRED)
+
+# 2. Define your executable and link against the CacheClient target
+add_executable(my_app main.cpp)
+target_link_libraries(my_app PRIVATE CacheClient::CacheClient)
 ```
 
 ## API Documentation

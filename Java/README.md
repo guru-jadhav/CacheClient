@@ -21,14 +21,39 @@ mvn test
 mvn clean package
 ```
 
-To include this library in a Maven project:
+To include this library in a Maven project, add the JitPack repository and the dependency configuration to your `pom.xml`:
+
 ```xml
-<dependency>
-    <groupId>com.gurujadhav</groupId>
-    <artifactId>cacheclient</artifactId>
-    <version>1.0.0</version>
-</dependency>
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
+
+<dependencies>
+    <dependency>
+        <groupId>com.github.guru-jadhav</groupId>
+        <artifactId>CacheClient</artifactId>
+        <version>v1.0.0</version>
+    </dependency>
+</dependencies>
 ```
+
+For Gradle projects, add the repository and dependency configuration to your `build.gradle`:
+
+```groovy
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    implementation 'com.github.guru-jadhav:CacheClient:v1.0.0'
+}
+```
+
+For other build tools and configurations, see the [JitPack CacheClient Project Page](https://jitpack.io/#guru-jadhav/CacheClient).
 
 ---
 
