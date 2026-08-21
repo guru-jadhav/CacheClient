@@ -12,6 +12,28 @@
  * @brief Main client class providing the public CacheCore API endpoints.
  * Handles DNS fallback resolution, RESP command serialization, type conversion,
  * and connection resource lifecycle management.
+ * 
+ * ### Supported Serialization Types
+ * 
+ * **Primitives:**
+ * - `int` (wire: "int")
+ * - `long long` (wire: "long long")
+ * - `float` (wire: "float")
+ * - `double` (wire: "double")
+ * - `bool` (wire: "bool", serialized as "1" or "0")
+ * - `char` (wire: "char")
+ * - `std::string` (wire: "string")
+ * 
+ * **STL Containers (elements must be supported primitives):**
+ * - `std::vector<T>` (wire: "vector")
+ * - `std::list<T>` (wire: "list")
+ * - `std::set<T>` (wire: "set")
+ * - `std::multiset<T>` (wire: "multiset")
+ * - `std::unordered_set<T>` (wire: "unordered_set")
+ * - `std::unordered_multiset<T>` (wire: "unordered_multiset")
+ * - `std::queue<T>` (wire: "queue")
+ * - `std::stack<T>` (wire: "stack")
+ * - `std::string` (wire: "string", supports container serialization)
  */
 class CacheClient {
     std::string domain;
@@ -143,6 +165,8 @@ public:
      * @brief Serializes and stores a value (primitive or container) in CacheCore.
      * Accepts arithmetic primitives, std::string, and standard STL containers.
      * 
+     * @see CacheClient for the complete list of supported C++ types.
+     * 
      * @tparam T The type of the value to store.
      * @param DB The database index (0, 1, or 2).
      * @param _key The key to associate the serialized value with.
@@ -181,6 +205,8 @@ public:
     /**
      * @brief Retrieves a value from CacheCore and deserializes it into type T.
      * Caller specifies the expected type, e.g., cache.GET<std::vector<int>>(0, "key").
+     * 
+     * @see CacheClient for the complete list of supported C++ types.
      * 
      * @tparam T The target type for deserialization.
      * @param DB The database index (0, 1, or 2).

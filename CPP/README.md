@@ -128,3 +128,32 @@ if (!cache.connect()) {
     ```cpp
     bool ok = cache.CLEAR(0); // clears database 0
     ```
+
+---
+
+## Supported Serialization Types
+
+The C++ client uses template metaprogramming to resolve type serialization at compile-time. Below is the list of supported types.
+
+### Primitive Types
+*   **`int`** (wire name: `"int"`)
+*   **`long long`** (wire name: `"long long"`)
+*   **`float`** (wire name: `"float"`)
+*   **`double`** (wire name: `"double"`)
+*   **`bool`** (wire name: `"bool"`, serialized as `"1"` or `"0"`)
+*   **`char`** (wire name: `"char"`)
+*   **`std::string`** (wire name: `"string"`)
+
+### Container Types
+*   **`std::vector<T>`** (wire name: `"vector"`)
+*   **`std::list<T>`** (wire name: `"list"`)
+*   **`std::set<T>`** (wire name: `"set"`)
+*   **`std::multiset<T>`** (wire name: `"multiset"`)
+*   **`std::unordered_set<T>`** (wire name: `"unordered_set"`)
+*   **`std::unordered_multiset<T>`** (wire name: `"unordered_multiset"`)
+*   **`std::queue<T>`** (wire name: `"queue"`)
+*   **`std::stack<T>`** (wire name: `"stack"`)
+*   **`std::string`** (wire name: `"string"`, supports collection-style serialization)
+
+> [!NOTE]
+> For any container type, the element type `T` must be one of the supported C++ primitive types listed above. Nesting containers (e.g., `std::vector<std::vector<int>>`) is not supported by the wire format serializer.
