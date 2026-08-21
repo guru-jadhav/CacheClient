@@ -8,6 +8,72 @@ import java.util.Stack;
  * Main client class providing the public CacheCore API endpoints.
  * Handles DNS fallback resolution, RESP command serialization, type conversion,
  * and connection resource lifecycle management.
+ * 
+ * <h3>Supported Java Serialization Types</h3>
+ * 
+ * <table border="1">
+ *   <caption>Java and Wire Type Mappings</caption>
+ *   <tr>
+ *     <th>Java Type</th>
+ *     <th>Wire Name</th>
+ *     <th>Type Category</th>
+ *   </tr>
+ *   <tr>
+ *     <td>{@code int} / {@link java.lang.Integer}</td>
+ *     <td>"int"</td>
+ *     <td>Primitive</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@code long} / {@link java.lang.Long}</td>
+ *     <td>"long long"</td>
+ *     <td>Primitive</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@code float} / {@link java.lang.Float}</td>
+ *     <td>"float"</td>
+ *     <td>Primitive</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@code double} / {@link java.lang.Double}</td>
+ *     <td>"double"</td>
+ *     <td>Primitive</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@code boolean} / {@link java.lang.Boolean}</td>
+ *     <td>"bool"</td>
+ *     <td>Primitive (1/0)</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@code char} / {@link java.lang.Character}</td>
+ *     <td>"char"</td>
+ *     <td>Primitive</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@link java.lang.String}</td>
+ *     <td>"string"</td>
+ *     <td>Primitive / Container</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@link java.util.List} / {@link java.util.ArrayList}</td>
+ *     <td>"vector"</td>
+ *     <td>Container (elements must be primitives)</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@link java.util.Set} / {@link java.util.HashSet}</td>
+ *     <td>"set"</td>
+ *     <td>Container (elements must be primitives)</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@link java.util.Queue} / {@link java.util.LinkedList}</td>
+ *     <td>"queue"</td>
+ *     <td>Container (elements must be primitives)</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@link java.util.Stack}</td>
+ *     <td>"stack"</td>
+ *     <td>Container (elements must be primitives)</td>
+ *   </tr>
+ * </table>
  */
 public class CacheClient implements AutoCloseable {
     private final String domain;
@@ -245,6 +311,8 @@ public class CacheClient implements AutoCloseable {
      * Serializes and stores a value (primitive or container) in the database.
      * The key will be subject to eviction rules by default (willExpire = true).
      * 
+     * @see CacheClient for the complete list of supported Java types.
+     * 
      * @param <T> the type of the value to store
      * @param db the database index (0, 1, or 2)
      * @param key the key to associate the serialized value with
@@ -259,6 +327,8 @@ public class CacheClient implements AutoCloseable {
 
     /**
      * Serializes and stores a value (primitive or container) in the database.
+     * 
+     * @see CacheClient for the complete list of supported Java types.
      * 
      * @param <T> the type of the value to store
      * @param db the database index (0, 1, or 2)
@@ -294,6 +364,8 @@ public class CacheClient implements AutoCloseable {
     /**
      * Retrieves a value from the database and deserializes it into primitive type T or String.
      * 
+     * @see CacheClient for the complete list of supported Java types.
+     * 
      * @param <T> the target type for deserialization
      * @param db the database index (0, 1, or 2)
      * @param key the key to look up
@@ -326,6 +398,8 @@ public class CacheClient implements AutoCloseable {
     /**
      * Retrieves a collection/container from the database and deserializes it into containerType of elementType.
      * Supported container types: List.class, Set.class, Queue.class, Stack.class.
+     * 
+     * @see CacheClient for the complete list of supported Java types.
      * 
      * @param <T> the type of the container
      * @param db the database index (0, 1, or 2)

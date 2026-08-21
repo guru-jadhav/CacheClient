@@ -140,6 +140,32 @@ if (!cache.connect()) {
     boolean ok = cache.CLEAR(0); // clears database 0
     ```
 
+
+---
+
+## Supported Serialization Types
+
+The Java client automatically maps and serializes standard Java object wrappers and primitive types to align with the CacheCore server's wire format.
+
+### Primitive Types
+*   **`Integer` / `int`** (wire name: `"int"`)
+*   **`Long` / `long`** (wire name: `"long long"`)
+*   **`Float` / `float`** (wire name: `"float"`)
+*   **`Double` / `double`** (wire name: `"double"`)
+*   **`Boolean` / `boolean`** (wire name: `"bool"`, serialized as `"1"` or `"0"`)
+*   **`Character` / `char`** (wire name: `"char"`)
+*   **`String`** (wire name: `"string"`)
+
+### Container Types
+*   **`List<T>` / `ArrayList<T>`** (wire name: `"vector"`)
+*   **`Set<T>` / `HashSet<T>`** (wire name: `"set"`)
+*   **`Queue<T>` / `LinkedList<T>`** (wire name: `"queue"`)
+*   **`Stack<T>`** (wire name: `"stack"`)
+*   **`String`** (wire name: `"string"`, supports collection-style serialization)
+
+> [!NOTE]
+> For any collection container type, the element type `T` must be one of the supported Java primitive classes listed above. Nesting collections (e.g., `List<List<Integer>>`) is not supported by the wire format serializer.
+
 ---
 
 ## Exception Handling
