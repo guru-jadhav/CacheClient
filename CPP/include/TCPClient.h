@@ -11,7 +11,9 @@ class TCPClient {
   int clientFd = -1;
 
   bool tryConnect();
+  bool tryReconnect();
   std::string RECV();
+  std::string sendInternal(const std::string &raw);
 
 public:
   TCPClient() = default;

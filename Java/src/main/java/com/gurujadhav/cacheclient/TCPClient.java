@@ -50,19 +50,44 @@ public class TCPClient {
 
     /**
      * Sends raw bytes over TCP and blocks until the full RESP frame response is received.
+     * Automatically attempts to reconnect once if the socket is severed or closed.
      * @return String - Raw RESP response string
      */
     public synchronized String send(String raw) {
-        if (socket == null || !socket.isConnected() || socket.isClosed()) {
+        try {
+            return sendInternal(raw);
+        } catch (NetworkException | IOException e) {
+            // Attempt to auto-reconnect once and retry
+            if (tryReconnect()) {
+                try {
+                    return sendInternal(raw);
+                } catch (IOException retryEx) {
+                    throw new NetworkException("network error while sending to CacheCore after reconnect", retryEx);
+                }
+            }
+            if (e instanceof NetworkException) {
+                throw (NetworkException) e;
+            }
+            throw new NetworkException("network error while sending to CacheCore", e);
+        }
+    }
+
+    private String sendInternal(String raw) throws IOException {
+        if (socket == null || socket.isClosed()) {
             throw new NetworkException("client is not connected to CacheCore");
         }
+        byte[] bytes = raw.getBytes(StandardCharsets.UTF_8);
+        outputStream.write(bytes);
+        outputStream.flush();
+        return recv();
+    }
+
+    private synchronized boolean tryReconnect() {
         try {
-            byte[] bytes = raw.getBytes(StandardCharsets.UTF_8);
-            outputStream.write(bytes);
-            outputStream.flush();
-            return recv();
-        } catch (IOException e) {
-            throw new NetworkException("network error while sending to CacheCore", e);
+            close();
+            return connect();
+        } catch (Exception ignored) {
+            return false;
         }
     }
 
@@ -74,6 +99,7 @@ public class TCPClient {
             while (true) {
                 int bytesRead = inputStream.read(buffer);
                 if (bytesRead == -1) {
+                    close();
                     throw new NetworkException("server closed the connection");
                 }
 
@@ -85,6 +111,7 @@ public class TCPClient {
                 }
             }
         } catch (IOException e) {
+            close();
             throw new NetworkException("network error while receiving from CacheCore", e);
         }
     }
@@ -92,11 +119,20 @@ public class TCPClient {
     /**
      * Closes socket and stream resources.
      */
-    public void close() {
+    public synchronized void close() {
         try {
-            if (inputStream != null) inputStream.close();
-            if (outputStream != null) outputStream.close();
-            if (socket != null) socket.close();
+            if (inputStream != null) {
+                inputStream.close();
+                inputStream = null;
+            }
+            if (outputStream != null) {
+                outputStream.close();
+                outputStream = null;
+            }
+            if (socket != null) {
+                socket.close();
+                socket = null;
+            }
         } catch (IOException ignored) {}
     }
 }

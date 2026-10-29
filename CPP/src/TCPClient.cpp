@@ -41,6 +41,15 @@ bool TCPClient::tryConnect() {
     throw NetworkException("failed to connect to: " + domain + ":" + std::to_string(port));
 }
 
+bool TCPClient::tryReconnect() {
+    try {
+        close();
+        return tryConnect();
+    } catch (...) {
+        return false;
+    }
+}
+
 std::string TCPClient::RECV() {
     char buffer[4096];
     std::string response;
@@ -49,9 +58,11 @@ std::string TCPClient::RECV() {
         int bytesRead = recv(clientFd, buffer, sizeof(buffer) - 1, 0);
 
         if (bytesRead == 0) {
+            close();
             throw NetworkException("server closed the connection");
         }
         if (bytesRead == -1) {
+            close();
             throw NetworkException("network error while receiving from CacheCore");
         }
 
@@ -64,16 +75,33 @@ std::string TCPClient::RECV() {
     }
 }
 
-std::string TCPClient::SEND(const std::string &raw) {
+std::string TCPClient::sendInternal(const std::string &raw) {
+    if (clientFd < 0) {
+        throw NetworkException("client is not connected to CacheCore");
+    }
+
     size_t totalSent = 0;
     while (totalSent < raw.size()) {
         ssize_t bytesSent = send(clientFd, raw.c_str() + totalSent, raw.size() - totalSent, 0);
         if (bytesSent == -1) {
+            close();
             throw NetworkException("network error while sending to CacheCore");
         }
         totalSent += bytesSent;
     }
     return RECV();
+}
+
+std::string TCPClient::SEND(const std::string &raw) {
+    try {
+        return sendInternal(raw);
+    } catch (const NetworkException &e) {
+        // Attempt to auto-reconnect once and retry
+        if (tryReconnect()) {
+            return sendInternal(raw);
+        }
+        throw;
+    }
 }
 
 TCPClient::~TCPClient() {
