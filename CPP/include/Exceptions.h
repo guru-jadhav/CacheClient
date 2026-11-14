@@ -4,7 +4,7 @@
 
 
 class CacheException : public std::exception{
-    std::string message = "oops something went wrong";
+    std::string message = "CacheCore client exception";
 public:
     const char * what() const noexcept override {
         return message.c_str();

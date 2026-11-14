@@ -35,7 +35,7 @@ To include this library in a Maven project, add the JitPack repository and the d
     <dependency>
         <groupId>com.github.guru-jadhav</groupId>
         <artifactId>CacheClient</artifactId>
-        <version>v1.0.0</version>
+        <version>v1.0.2</version>
     </dependency>
 </dependencies>
 ```
@@ -49,7 +49,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.guru-jadhav:CacheClient:v1.0.0'
+    implementation 'com.github.guru-jadhav:CacheClient:v1.0.2'
 }
 ```
 
