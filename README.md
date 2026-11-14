@@ -109,10 +109,3 @@ Example wire frame (SET on DB 0):
 ## Related
 
 - [CacheCore](https://github.com/guru-jadhav/CacheCore) — The server this library connects to. Start there for protocol spec, command reference, and wire format examples.
-
----
-
-## Roadmap
-
-- [x] C++ v1 — synchronous API (Complete)
-- [x] Java v1 — synchronous API (Complete)

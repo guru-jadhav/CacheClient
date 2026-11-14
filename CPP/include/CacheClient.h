@@ -114,7 +114,6 @@ public:
 
     /**
      * @brief Sets a time-to-live timeout (in seconds) on a key in the database.
-     * Note: CacheCore clamping rules may apply to minimum TTL.
      * 
      * @param DB The database index (0, 1, or 2)
      * @param _key The key to expire

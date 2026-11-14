@@ -90,7 +90,7 @@ public class CacheClient implements AutoCloseable {
     public CacheClient(String domain, int port) {
         this.domain = domain;
         this.port = port;
-        this.client = new TCPClient(domain, port);
+        this.client = new TCPClient(this.domain, this.port);
     }
 
     /**
@@ -117,8 +117,7 @@ public class CacheClient implements AutoCloseable {
         req.cmd = "PING";
         req.dbIndex = 0;
 
-        RESPResponse resp = RESPResponse.class.cast(null); // Will be overwritten
-        resp = RESPParser.decode(client.send(RESPParser.encode(req)));
+        RESPResponse resp = RESPParser.decode(client.send(RESPParser.encode(req)));
         if (resp.isError) {
             throw new DeserializeException(resp.value);
         }
@@ -191,7 +190,6 @@ public class CacheClient implements AutoCloseable {
 
     /**
      * Sets a time-to-live timeout (in seconds) on a key in the database.
-     * Note: CacheCore clamping rules may apply to minimum TTL.
      * 
      * @param db the database index (0, 1, or 2)
      * @param key the key to expire

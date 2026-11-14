@@ -9,8 +9,8 @@ CPP/
 ├── include/
 │   ├── CacheClient.h       # public API
 │   ├── TypeSerializer.h    # template serialization for STL containers and primitives
-│   ├── RESPParser.h        # RESP encode/decode (in progress)
-│   └── TCPClient.h         # TCP connection management (in progress)
+│   ├── RESPParser.h        # RESP encode/decode
+│   └── TCPClient.h         # TCP connection management
 └── src/
     ├── CacheClient.cpp
     ├── TypeSerializer.cpp

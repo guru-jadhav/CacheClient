@@ -166,9 +166,8 @@ void test_expire() {
     // Write a key with expiry
     assert(cache.SETRAW(0, "exp_key", "temporary", true)); 
     
-    // Set TTL. Note: CacheCore clamps the minimum TTL to std::max(60, duration),
-    // so this key will remain alive for 60 seconds.
-    assert(cache.EXPIRE(0, "exp_key", 1)); 
+    // Set TTL on key
+    assert(cache.EXPIRE(0, "exp_key", 10)); 
 
     // Verify key exists immediately
     assert(cache.EXISTS(0, "exp_key"));
